@@ -40,7 +40,7 @@ defmodule CM1 do
   defmodule Calculator do
     def to_token(["+"]), do: :add
     def to_token(["-"]), do: :sub
-    def to_token(["*"]), do: :time
+    def to_token(["*"]), do: :tim
     def to_token(["/"]), do: :div
     def to_token(["**"]), do: :pow
     def to_token(["//"]), do: :rem
@@ -67,16 +67,16 @@ defmodule CM1 do
     end
 
     defp eval_rpn([], [value]), do: value
-    defp eval_rpn([:add|tokens],  [rhs, lhs|acc]), do: eval_rpn(tokens, [lhs + rhs|acc])
-    defp eval_rpn([:sub|tokens],  [rhs, lhs|acc]), do: eval_rpn(tokens, [lhs - rhs|acc])
-    defp eval_rpn([:time|tokens], [rhs, lhs|acc]), do: eval_rpn(tokens, [lhs * rhs|acc])
-    defp eval_rpn([:div|tokens],  [rhs, lhs|acc]), do: eval_rpn(tokens, [div(lhs, rhs)|acc])
-    defp eval_rpn([:pow|tokens],  [rhs, lhs|acc]), do: eval_rpn(tokens, [pow(lhs, rhs)|acc])
-    defp eval_rpn([:rem|tokens],  [rhs, lhs|acc]), do: eval_rpn(tokens, [rem(lhs, rhs)|acc])
+    defp eval_rpn([:add|tokens], [rhs, lhs|acc]), do: eval_rpn(tokens, [lhs + rhs|acc])
+    defp eval_rpn([:sub|tokens], [rhs, lhs|acc]), do: eval_rpn(tokens, [lhs - rhs|acc])
+    defp eval_rpn([:tim|tokens], [rhs, lhs|acc]), do: eval_rpn(tokens, [lhs * rhs|acc])
+    defp eval_rpn([:div|tokens], [rhs, lhs|acc]), do: eval_rpn(tokens, [div(lhs, rhs)|acc])
+    defp eval_rpn([:pow|tokens], [rhs, lhs|acc]), do: eval_rpn(tokens, [pow(lhs, rhs)|acc])
+    defp eval_rpn([:rem|tokens], [rhs, lhs|acc]), do: eval_rpn(tokens, [rem(lhs, rhs)|acc])
     defp eval_rpn([value|tokens], acc), do: eval_rpn(tokens, [value|acc])
 
     defp order_of_operator(op) when op in [:pow], do: 3
-    defp order_of_operator(op) when op in [:time, :div, :rem], do: 2
+    defp order_of_operator(op) when op in [:tim, :div, :rem], do: 2
     defp order_of_operator(op) when op in [:add, :sub], do: 1
     defp order_of_operator(_), do: 0
   end
