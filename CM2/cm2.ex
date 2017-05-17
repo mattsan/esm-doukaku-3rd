@@ -4,91 +4,91 @@ defmodule CM2 do
       [size_s, hexcode] = String.split(str, ":")
       size = String.to_integer(size_s)
       [1|bits] = Integer.digits(String.to_integer("1" <> hexcode, 16), 2)
-      decode(Enum.take(bits, size), <<>>)
+      decode(Enum.take(bits, size), [])
     end
 
     def encode(value) do
-      bits = _encode("#{value}")
+      bits = _encode(digits(value))
       bit_length = length(bits)
       padding = List.duplicate(0, rem(4 - rem(bit_length, 4), 4))
       code = Integer.to_string(Integer.undigits(bits ++ padding, 2), 16)
       "#{bit_length}:#{code}"
     end
 
-    defp decode([], acc), do: acc
-    defp decode([0, 0               |rest], acc), do: decode(rest, <<acc::binary, ?0>>)
-    defp decode([0, 1               |rest], acc), do: decode(rest, <<acc::binary, ?1>>)
-    defp decode([1, 0, 0            |rest], acc), do: decode(rest, <<acc::binary, ?2>>)
-    defp decode([1, 0, 1, 0         |rest], acc), do: decode(rest, <<acc::binary, ?3>>)
-    defp decode([1, 0, 1, 1         |rest], acc), do: decode(rest, <<acc::binary, ?4>>)
-    defp decode([1, 1, 0, 0         |rest], acc), do: decode(rest, <<acc::binary, ?5>>)
-    defp decode([1, 1, 0, 1, 0      |rest], acc), do: decode(rest, <<acc::binary, ?6>>)
-    defp decode([1, 1, 0, 1, 1      |rest], acc), do: decode(rest, <<acc::binary, ?7>>)
-    defp decode([1, 1, 1, 0, 0, 0   |rest], acc), do: decode(rest, <<acc::binary, ?8>>)
-    defp decode([1, 1, 1, 0, 0, 1   |rest], acc), do: decode(rest, <<acc::binary, ?9>>)
-    defp decode([1, 1, 1, 0, 1, 0, 0|rest], acc), do: decode(rest, <<acc::binary, ?+>>)
-    defp decode([1, 1, 1, 0, 1, 0, 1|rest], acc), do: decode(rest, <<acc::binary, ?->>)
-    defp decode([1, 1, 1, 0, 1, 1, 0|rest], acc), do: decode(rest, <<acc::binary, ?*>>)
-    defp decode([1, 1, 1, 0, 1, 1, 1|rest], acc), do: decode(rest, <<acc::binary, ?/>>)
+    defp digits(value) when value < 0, do: [?-|Integer.digits(-value)]
+    defp digits(value), do: Integer.digits(value)
 
-    defp _encode(<<>>), do: []
-    defp _encode(<<?0, rest::binary>>), do: [0, 0               |_encode(rest)]
-    defp _encode(<<?1, rest::binary>>), do: [0, 1               |_encode(rest)]
-    defp _encode(<<?2, rest::binary>>), do: [1, 0, 0            |_encode(rest)]
-    defp _encode(<<?3, rest::binary>>), do: [1, 0, 1, 0         |_encode(rest)]
-    defp _encode(<<?4, rest::binary>>), do: [1, 0, 1, 1         |_encode(rest)]
-    defp _encode(<<?5, rest::binary>>), do: [1, 1, 0, 0         |_encode(rest)]
-    defp _encode(<<?6, rest::binary>>), do: [1, 1, 0, 1, 0      |_encode(rest)]
-    defp _encode(<<?7, rest::binary>>), do: [1, 1, 0, 1, 1      |_encode(rest)]
-    defp _encode(<<?8, rest::binary>>), do: [1, 1, 1, 0, 0, 0   |_encode(rest)]
-    defp _encode(<<?9, rest::binary>>), do: [1, 1, 1, 0, 0, 1   |_encode(rest)]
-    defp _encode(<<?+, rest::binary>>), do: [1, 1, 1, 0, 1, 0, 0|_encode(rest)]
-    defp _encode(<<?-, rest::binary>>), do: [1, 1, 1, 0, 1, 0, 1|_encode(rest)]
-    defp _encode(<<?*, rest::binary>>), do: [1, 1, 1, 0, 1, 1, 0|_encode(rest)]
-    defp _encode(<<?/, rest::binary>>), do: [1, 1, 1, 0, 1, 1, 1|_encode(rest)]
+    defp decode([], acc),                         do: acc |> Enum.reverse
+    defp decode([0, 0               |rest], acc), do: decode(rest, [?0|acc])
+    defp decode([0, 1               |rest], acc), do: decode(rest, [?1|acc])
+    defp decode([1, 0, 0            |rest], acc), do: decode(rest, [?2|acc])
+    defp decode([1, 0, 1, 0         |rest], acc), do: decode(rest, [?3|acc])
+    defp decode([1, 0, 1, 1         |rest], acc), do: decode(rest, [?4|acc])
+    defp decode([1, 1, 0, 0         |rest], acc), do: decode(rest, [?5|acc])
+    defp decode([1, 1, 0, 1, 0      |rest], acc), do: decode(rest, [?6|acc])
+    defp decode([1, 1, 0, 1, 1      |rest], acc), do: decode(rest, [?7|acc])
+    defp decode([1, 1, 1, 0, 0, 0   |rest], acc), do: decode(rest, [?8|acc])
+    defp decode([1, 1, 1, 0, 0, 1   |rest], acc), do: decode(rest, [?9|acc])
+    defp decode([1, 1, 1, 0, 1, 0, 0|rest], acc), do: decode(rest, [?+|acc])
+    defp decode([1, 1, 1, 0, 1, 0, 1|rest], acc), do: decode(rest, [?-|acc])
+    defp decode([1, 1, 1, 0, 1, 1, 0|rest], acc), do: decode(rest, [?*|acc])
+    defp decode([1, 1, 1, 0, 1, 1, 1|rest], acc), do: decode(rest, [?/|acc])
+
+    defp _encode([]),        do: []
+    defp _encode([0|rest]),  do: [0, 0               |_encode(rest)]
+    defp _encode([1|rest]),  do: [0, 1               |_encode(rest)]
+    defp _encode([2|rest]),  do: [1, 0, 0            |_encode(rest)]
+    defp _encode([3|rest]),  do: [1, 0, 1, 0         |_encode(rest)]
+    defp _encode([4|rest]),  do: [1, 0, 1, 1         |_encode(rest)]
+    defp _encode([5|rest]),  do: [1, 1, 0, 0         |_encode(rest)]
+    defp _encode([6|rest]),  do: [1, 1, 0, 1, 0      |_encode(rest)]
+    defp _encode([7|rest]),  do: [1, 1, 0, 1, 1      |_encode(rest)]
+    defp _encode([8|rest]),  do: [1, 1, 1, 0, 0, 0   |_encode(rest)]
+    defp _encode([9|rest]),  do: [1, 1, 1, 0, 0, 1   |_encode(rest)]
+    defp _encode([?-|rest]), do: [1, 1, 1, 0, 1, 0, 1|_encode(rest)]
   end
 
   defmodule Parser do
-    def parse(str) do
-      Regex.scan(~r"\d+|\+|-|\*{1,2}|/{1,2}", str)
-      |> Enum.map(fn
-        ["+"] -> :add
-        ["-"] -> :sub
-        ["*"] -> :tim
-        ["/"] -> :div
-        ["**"] -> :pow
-        ["//"] -> :rem
-        [n] -> String.to_integer n
-      end)
+    def parse(charlist) do
+      scan(charlist, 0, [])
       |> get_expression
     end
 
-    def get_expression(tokens) do
+    defp scan([], value, acc), do: [value|acc] |> Enum.reverse
+    defp scan([?*, ?*|rest], value, acc), do: scan(rest, 0, [:pow, value|acc])
+    defp scan([?/, ?/|rest], value, acc), do: scan(rest, 0, [:rem, value|acc])
+    defp scan([?*|rest], value, acc), do: scan(rest, 0, [:tim, value|acc])
+    defp scan([?/|rest], value, acc), do: scan(rest, 0, [:div, value|acc])
+    defp scan([?+|rest], value, acc), do: scan(rest, 0, [:add, value|acc])
+    defp scan([?-|rest], value, acc), do: scan(rest, 0, [:sub, value|acc])
+    defp scan([d|rest], value, acc), do: scan(rest, value * 10 + d - ?0, acc)
+
+    defp get_expression(tokens) do
       {term, rest} = get_term(tokens)
       get_expression(term, rest)
     end
-    def get_expression(term, []), do: term
-    def get_expression(term1, [op|tokens]) when op in [:add, :sub] do
+    defp get_expression(term, []), do: term
+    defp get_expression(term1, [op|tokens]) when op in [:add, :sub] do
       {term2, rest} = get_term(tokens)
       get_expression({op, term1, term2}, rest)
     end
 
-    def get_term(tokens) do
+    defp get_term(tokens) do
       {factor, rest} = get_factor(tokens)
       get_term(factor, rest)
     end
-    def get_term(factor, []), do: {factor, []}
-    def get_term(factor1, [op|tokens]) when op in [:tim, :div, :rem] do
+    defp get_term(factor, []), do: {factor, []}
+    defp get_term(factor1, [op|tokens]) when op in [:tim, :div, :rem] do
       {factor2, rest} = get_factor(tokens)
       get_term({op, factor1, factor2}, rest)
     end
-    def get_term(factor, rest), do: {factor, rest}
+    defp get_term(factor, rest), do: {factor, rest}
 
-    def get_factor([value1, :pow|tokens]) do
+    defp get_factor([value1, :pow|tokens]) do
       {value2, rest} = get_factor(tokens)
       {{:pow, value1, value2}, rest}
     end
-    def get_factor([value|rest]), do: {value, rest}
+    defp get_factor([value|rest]), do: {value, rest}
   end
 
   defmodule Calc do
